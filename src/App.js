@@ -1,23 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import { Login } from "./components/Login";
+import { Provider, useDispatch } from "react-redux";
+import { USER_ACTION, store } from "./redux";
+import { Home } from "./pages/Home";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./configs/firebase";
 
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("change user: ", user);
+        dispatch({ type: USER_ACTION.SET, user: user });
+        return;
+      }
+
+      dispatch({ type: USER_ACTION.REMOVED, user: user });
+    });
+
+    return () => unsub();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Routes>
+        <Route path="/" Component={Home} />
+        <Route path="/login" Component={Login} />
+      </Routes>
     </div>
   );
 }
